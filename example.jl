@@ -245,7 +245,7 @@ recovered_better = Model(;better_space(choose_optimum(better_result))...)
 log_likelihood(recovered_better, trials) - true_logp
 # Much better! 
 
-plot_gp_result(better_space, result)
+plot_gp_result(better_space, better_result)
 # This is exactly what we want our GP to look like. Low uncertainty near
 # the optimum and reasonable and similar scales on all the y axes.
 
@@ -307,8 +307,8 @@ recovered_improved = Model(;better_space(choose_optimum(result_improved))...)
 log_likelihood(recovered_improved, trials) - true_logp
 log_likelihood(recovered_gp, trials) - true_logp  # for comparison
 
-# Looking better, still not great though. We could keep trying this
-# until we got a satisfactory result. Note, however, that this is really
-# only useful at the prototyping/exploration stage. Your final results
-# should always be generated in one run so that they are reproducible.
+# Looking better! Might be great depending on random noise. If not, we could
+# keep trying this until we got a satisfactory result. Note, however, that
+# this is really only useful at the prototyping/exploration stage. Your final
+# results should always be generated in one run so that they are reproducible.
 
