@@ -15,7 +15,7 @@ function gp_minimize(f::Function, d::Int; verbose=true, init_Xy=nothing, run=tru
     model = ElasticGPE(d,
       mean = MeanConst(0.),
       kernel = Mat32Ard(zeros(d), 5.),
-      logNoise = -2.,
+      logNoise = noisebounds[2],
       capacity = iterations + (init_Xy != nothing ? size(init_Xy[1],2) : 0)
     )
 

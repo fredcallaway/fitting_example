@@ -1,4 +1,5 @@
 using DataStructures: OrderedDict
+using Sobol
 
 struct Box
     dims::OrderedDict
@@ -64,8 +65,21 @@ end
 
 function grid(n::Int, box::Box)
     xs = range(0, 1, length=n)
-    kws = valmap(box.dims) do d
-        [rescale(d, x) for x in xs]
-    end
+    kws = map(collect(box.dims)) do (k, d)
+        k => [rescale(d, x) for x in xs]
+    end |> OrderedDict
     grid(;kws...)
+end
+
+function grid(;kws...)
+    X = map(Iterators.product(values(kws)...)) do x
+        (; zip(keys(kws), x)...)
+    end
+    X
+end
+
+function sobol(n::Int, box::Box)
+    seq = SobolSeq(length(box))
+    skip(seq, n)
+    [Sobol.next!(seq) for i in 1:n]
 end
