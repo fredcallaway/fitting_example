@@ -39,7 +39,6 @@ function simulate(model::DDM, v::Vector{Float64}; maxt=100000, logger=(dv, t) ->
         for i in 1:N
             dv[i] += drift[i] + rand(noise)
         end
-        best, next = partialsortperm(dv, 1:2, rev=true)
         choice = check_termination(dv, model.threshold)
         if choice != 0
             return (choice, t)
@@ -47,4 +46,3 @@ function simulate(model::DDM, v::Vector{Float64}; maxt=100000, logger=(dv, t) ->
     end
     (0, -1)
 end
-
