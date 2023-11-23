@@ -52,7 +52,7 @@ function ibs(hit_samplers::Vector{<:Function}; repeats=1, min_logp=-Inf)
     return (logp=total_logp / repeats, std=√total_var / repeats, converged=true, n_call)
 end
 
-function ibs(sample_hit::Function, data::Vector; kws...)
+function ibs(sample_hit::Function, data::AbstractArray; kws...)
     hit_samplers = map(data) do d
         () -> sample_hit(d)
     end
