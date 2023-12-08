@@ -1,6 +1,10 @@
-using Distributions
-include("ibs.jl")
+@everywhere using Distributions
+addprocs(2)
+@everywhere include("ibs.jl")
+
 # %% --------
+
+ps = .1:.2:.9
 N = 1000
 res = map(Iterators.product(ps, ps)) do (data_p, model_p)
     n_true = Int(round(N * data_p))
@@ -19,6 +23,21 @@ end
 @assert mean(res) do x
     (x.logp - x.true_logp) / x.true_logp
 end < .01
+
+# %% --------
+data_p = .2; model_p = .2
+
+n_true = Int(round(N * data_p))
+data = [trues(n_true); falses(N - n_true)]
+@time est = ibs(data; repeats=1, parallel=true) do d
+    sleep(.001)
+    rand(Bernoulli(model_p)) == d
+end
+
+@time est = ibs(data; repeats=1, parallel=false) do d
+    sleep(.001)
+    rand(Bernoulli(model_p)) == d
+end
 
 # # %% --------
 # N = 1000

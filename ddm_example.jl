@@ -39,10 +39,10 @@ using Distributed
         log(1 / model.N) + log(n_rt_hits / model.max_rt)
     end
 
-    function log_likelihood(model::DDM, trials::Vector{Trial}; ε=.01, rt_tol=1, kws...)
+    function log_likelihood(model::DDM, trials::Vector{Trial}; parallel=false, ε=.01, rt_tol=1, kws...)
         lapse = LapseModel(trials)
         min_logp = log_likelihood(lapse, trials; rt_tol)
-        ibs(trials; min_logp, kws...) do t
+        ibs(trials; parallel, min_logp, kws...) do t
             if rand() < ε
                 choice, rt = simulate(lapse)
             else
@@ -65,24 +65,25 @@ trials = map(1:500) do i
 end;
 
 # %% --------
-# compute the likelihood on a grid
+# define search space
 
 box = Box(
-    :d => (.01, .05),
-    :σ => (.1, .3)
+    :d => (.01, .1),
+    :σ => (.05, .5)
 )
+
+# %% --------
+# grid search
+
 params = grid(5, box)
 
-like_grid = @showprogress map(params) do prm
+like_grid = @showprogress pmap(params) do prm
     log_likelihood(DDM(;prm...), trials; rt_tol=1, repeats=3)
 end
 
-serialize("results/like_grid", like_grid)
+# serialize("results/like_grid", like_grid)
+# like_grid = deserialize("results/like_grid")
 
-# %% --------
-# plot likelihood
-
-like_grid = deserialize("results/like_grid")
 using StatsPlots
 L = getfield.(like_grid, :logp)
 heatmap(L)
@@ -123,6 +124,27 @@ mle = DDM(;box(result_gp.model_optimizer)...)
 log_likelihood(mle, trials; repeats=50)
 log_likelihood(model, trials; repeats=50)
 
+# %% --------
+# BADS
+include("bads.jl")
+model
+@everywhere using Random
+@everywhere Random.seed!(myid())
+@time log_likelihood(DDM(d=.05, σ=.15), trials, parallel=true)
+@time log_likelihood(DDM(d=.05, σ=.15), trials, parallel=false)
 
+Random.seed!(1)
+log_likelihood(DDM(d=.05, σ=.15), trials)
 
+bads = optimize_bads(lower_bounds=lower(box), upper_bounds=upper(box), specify_target_noise=true, tol_fun=1, max_fun_evals=1000) do (d, σ)
+    model = DDM(;d, σ)
+    (;logp, std) = log_likelihood(model, trials; repeats=1)
+    if ismissing(std)
+        std = 1.
+    end
+    -logp, std
+end
+
+d, σ = get_result(bads)[:x]
+DDM(;d, σ)
 
