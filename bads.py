@@ -23,10 +23,22 @@ def jsonify(obj):
 
 def target(x):
     print("REQUEST_EVALUATION", x.tolist())
-    return float(input())
+    y = json.loads(input())
+    if isinstance(y, list):
+        return tuple(y)
+    else:
+        return y
 
-conf = json.loads(sys.argv[1])
-bads = BADS(target, conf["x0"], conf["lower_bounds"], conf["upper_bounds"], conf["plausible_lower_bounds"], conf["plausible_upper_bounds"])
-result = bads.optimize()
-del result['fun']
-print("FINAL_RESULT", jsonify(result))
+try:
+    conf = json.loads(sys.argv[1])
+    args = [conf[k] for k in ["x0", "lower_bounds", "upper_bounds", "plausible_lower_bounds", "plausible_upper_bounds"]]
+
+    if conf['options'].get('specify_target_noise'):
+        conf['options']['uncertainty_handling'] = True
+    bads = BADS(target, *args, options=conf["options"])
+    result = bads.optimize()
+    del result['fun']
+    print("FINAL_RESULT", jsonify(result))
+except:
+    print("EXCEPTION")
+    raise

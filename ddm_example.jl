@@ -127,14 +127,6 @@ log_likelihood(model, trials; repeats=50)
 # %% --------
 # BADS
 include("bads.jl")
-model
-@everywhere using Random
-@everywhere Random.seed!(myid())
-@time log_likelihood(DDM(d=.05, σ=.15), trials, parallel=true)
-@time log_likelihood(DDM(d=.05, σ=.15), trials, parallel=false)
-
-Random.seed!(1)
-log_likelihood(DDM(d=.05, σ=.15), trials)
 
 bads = optimize_bads(lower_bounds=lower(box), upper_bounds=upper(box), specify_target_noise=true, tol_fun=1, max_fun_evals=1000) do (d, σ)
     model = DDM(;d, σ)

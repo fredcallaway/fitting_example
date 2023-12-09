@@ -23,6 +23,10 @@ logscale(x, low, high) = exp(log(low) + x * (log(high) - log(low)))
 unlinscale(x, low, high) = (x - low) / (high-low)
 unlogscale(x, low, high) = (log(x) - log(low)) / (log(high) - log(low))
 
+
+lower(box::Box) = first.(values(box.dims))
+upper(box::Box) = last.(values(box.dims))
+
 function rescale(d, x::Real)
     scale = :log in d ? logscale : linscale
     scale(x, d[1], d[2])
