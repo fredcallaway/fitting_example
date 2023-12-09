@@ -1,4 +1,4 @@
 
 # Example of fitting a noisy likelihood in julia
 
-See example.jl
+See simple_example.jl and ddm_example.jl
